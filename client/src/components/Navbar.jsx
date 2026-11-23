@@ -1,52 +1,37 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import Logo from "../assets/logo.png";
+import Icon from "./Icon";
 
-const Navbar = () => {
-  <nav
-    className="relative flex w-full flex-wrap items-center justify-between bg-zinc-50 py-2 shadow-dark-mild dark:bg-slate-500 lg:py-4"
-    data-twe-navbar-ref
-  >
-    <div className="flex w-full flex-wrap items-center justify-between px-3">
-      <div className="flex items-center">
-        <a href="#" className="flex items-center">
-          <img src={Logo} alt="" style={{ height: "50px" }} className="mr-2" />
-          <span
-            className="font-serif font-normal"
-            style={{ color: "white", fontStyle: "bold", fontSize: "23px" }}
-          >
-            Furry pet clinic
-          </span>
-        </a>
-      </div>
-      <div
-        className="!visible mt-2 hidden flex-grow basis-[100%] items-center lg:mt-0 lg:!flex lg:basis-auto"
-        id="navbarSupportedContent4"
-        data-twe-collapse-item
-      >
-        <ul
-          className="list-style-none me-auto flex flex-col ps-0 lg:mt-1 lg:flex-row"
-          data-twe-navbar-nav-ref
-        ></ul>
-        <a href="#" className="hover-text">
-          <div className="flex items-center">
-            <Link to="/Home">
-              {" "}
-              <span className="font-serif hover-text__inner">Home</span>
-            </Link>
-          </div>
-        </a>
+const linkClass = ({ isActive }) =>
+  `inline-flex min-h-[44px] items-center rounded-lg px-3 text-sm font-medium transition-colors ${
+    isActive ? "bg-brand-50 text-brand-800" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+  }`;
 
-        <div className="flex items-center pl-5">
-          <button
-            type="button"
-            className="dark:text-gray-100 font-serif font-light me-3 bg-primary px-6 pb-2 pt-2.5 text-xs font-light font-semibold leading-normal text-white hover:bg-blue-400 transition duration-150 ease-in-out hover:bg-primary-accent-300 hover:shadow-primary-2 focus:bg-primary-accent-300 focus:shadow-primary-2 focus:outline-none focus:ring-0 active:bg-primary-600 active:shadow-primary-2 motion-reduce:transition-none dark:shadow-black/30 dark:hover:shadow-dark-strong dark:focus:shadow-dark-strong dark:active:shadow-dark-strong rounded-2xl"
-          >
-            <span>Sign Up</span>
-          </button>
-        </div>
-      </div>
+const Navbar = () => (
+  <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur">
+    <a
+      href="#main"
+      className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:rounded focus:bg-white focus:px-3 focus:py-2"
+    >
+      Skip to content
+    </a>
+    <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+      <Link to="/view" className="flex items-center gap-3 rounded-lg">
+        <img src={Logo} alt="" width="40" height="40" className="h-10 w-10" />
+        <span className="text-lg font-bold tracking-tight text-slate-900">
+          Furry Pets <span className="hidden font-medium text-slate-500 sm:inline">Clinic</span>
+        </span>
+      </Link>
+      <nav aria-label="Main" className="flex items-center gap-1">
+        <NavLink to="/view" className={linkClass}>Records</NavLink>
+        <Link to="/add" className="btn-primary ml-2">
+          <Icon name="plus" className="h-4 w-4" />
+          <span className="hidden sm:inline">Add pet</span>
+          <span className="sr-only sm:hidden">Add pet</span>
+        </Link>
+      </nav>
     </div>
-  </nav>;
-};
+  </header>
+);
 
 export default Navbar;

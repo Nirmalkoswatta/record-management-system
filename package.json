@@ -5,8 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon  API/index.js",
-    "dev": "nodemon  API/index.js"
+    "start": "node --env-file-if-exists=.env API/index.js",
+    "dev": "node --watch --env-file-if-exists=.env API/index.js"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +15,8 @@
     "@iconify/iconify": "^3.1.1",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
+    "express": "^4.22.3",
+    "mongoose": "^9.12.3",
     "react-hot-toast": "^2.4.1",
     "react-toast": "^1.0.3",
     "react-toastify": "^10.0.5"

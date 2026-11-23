@@ -1,105 +1,73 @@
-// Import the PetRecord model
 import PetRecord from '../model.js/record.model.js';
 
-// Controller to handle adding a new pet record
+// Only these fields are accepted from clients (blocks mass-assignment of _id, timestamps, etc.)
+const pick = ({ petName, species, ownerName, ownerPhone, petBreed, petAge, specialNotes }) => ({
+  petName,
+  species,
+  ownerName,
+  // null (not undefined) so clearing a field on update actually unsets it
+  ownerPhone: ownerPhone || null,
+  petBreed,
+  petAge: petAge === '' || petAge == null ? null : petAge,
+  specialNotes,
+});
+
+// Bad input (validation / malformed id) is the client's fault: 400, with per-field messages.
+const fail = (res, error, message) => {
+  if (error.name === 'ValidationError') {
+    const errors = Object.fromEntries(Object.entries(error.errors).map(([k, v]) => [k, v.message]));
+    return res.status(400).json({ message: 'Please fix the highlighted fields', errors });
+  }
+  if (error.name === 'CastError') return res.status(400).json({ message: 'Invalid record id' });
+  console.error(message, error);
+  return res.status(500).json({ message });
+};
+
+const notFound = (res) => res.status(404).json({ message: 'Pet record not found' });
+
 export const addPetRecord = async (req, res) => {
   try {
-    // Extracting data from the request body
-    const { petName, ownerName, petBreed, petAge, specialNotes } = req.body;
-
-    // Creating a new pet record instance
-    const newPetRecord = new PetRecord({
-      petName,
-      ownerName,
-      petBreed,
-      petAge,
-      specialNotes
-    });
-
-    // Saving the new pet record to the database
-    await newPetRecord.save();
-
-    // Sending a success response
-    res.status(201).json({ message: 'Pet record added successfully' });
+    const record = await PetRecord.create(pick(req.body));
+    res.status(201).json(record);
   } catch (error) {
-    // Handling errors
-    res.status(500).json({ message: 'Failed to add pet record', error: error.message });
+    fail(res, error, 'Failed to add pet record');
   }
 };
 
-// Controller to handle fetching all pet records
-export const getAllPetRecords = async (req, res) => {
+export const getAllPetRecords = async (_req, res) => {
   try {
-    // Fetching all pet records from the database
-    const petRecords = await PetRecord.find();
-
-    // Sending the pet records as a response
-    res.status(200).json(petRecords);
+    res.status(200).json(await PetRecord.find().sort({ createdAt: -1 }));
   } catch (error) {
-    // Handling errors
-    res.status(500).json({ message: 'Failed to fetch pet records', error: error.message });
+    fail(res, error, 'Failed to fetch pet records');
   }
 };
-
-// Controller to handle fetching a single pet record
 
 export const getSinglePetRecord = async (req, res) => {
   try {
-    // Extracting the pet record ID from the request parameters
-    const { id } = req.params;
-
-    // Fetching the pet record from the database
-    const petRecord = await PetRecord.findById(id);
-
-    // Sending the pet record as a response
-    res.status(200).json(petRecord);
+    const record = await PetRecord.findById(req.params.id);
+    record ? res.status(200).json(record) : notFound(res);
   } catch (error) {
-    // Handling errors
-    res.status(500).json({ message: 'Failed to fetch pet record', error: error.message });
+    fail(res, error, 'Failed to fetch pet record');
   }
 };
 
-// Controller to handle updating a pet record
-
 export const updatePetRecord = async (req, res) => {
-    try {
-      // Extracting the pet record ID from the request parameters
-      const { id } = req.params;
-      
-      // Extracting data from the request body
-      const { petName, ownerName, petBreed, petAge, specialNotes } = req.body;
-      
-      // Updating the pet record in the database
-      await PetRecord.findByIdAndUpdate(id, {
-        petName,
-        ownerName,
-        petBreed,
-        petAge,
-        specialNotes
-      });
-      
-      // Sending a success response
-      res.status(200).json({ message: 'Pet record updated successfully' });
-    } catch (error) {
-        // Handling errors
-        res.status(500).json({ message: 'Failed to update pet record', error: error.message });
-    }
-}
-
-// Controller to handle deleting a pet record
+  try {
+    const record = await PetRecord.findByIdAndUpdate(req.params.id, pick(req.body), {
+      returnDocument: 'after',
+      runValidators: true,
+    });
+    record ? res.status(200).json(record) : notFound(res);
+  } catch (error) {
+    fail(res, error, 'Failed to update pet record');
+  }
+};
 
 export const deletePetRecord = async (req, res) => {
-    try {
-      // Extracting the pet record ID from the request parameters
-      const { id } = req.params;
-      
-      // Deleting the pet record from the database
-      await PetRecord.findByIdAndDelete(id);
-      
-      // Sending a success response
-      res.status(200).json({ message: 'Pet record deleted successfully' });
-    } catch (error) {
-        // Handling errors
-        res.status(500).json({ message: 'Failed to delete pet record', error: error.message });
-    }
-}
+  try {
+    const record = await PetRecord.findByIdAndDelete(req.params.id);
+    record ? res.status(200).json({ message: 'Pet record deleted successfully' }) : notFound(res);
+  } catch (error) {
+    fail(res, error, 'Failed to delete pet record');
+  }
+};
